@@ -15,6 +15,20 @@ export function addEventListeners(){
         //await Util.sleep(1000) //testing purposes only to see the wait when home button is clicked
         Util.enableButton(Element.menuHome, label)
     })
+
+    Element.formDeleteThread.addEventListener('submit', async e=> {
+        e.preventDefault()
+        //console.log(FirebaseController.getOneThread.theadId)
+        try{
+        await FirebaseController.deleteThread('need to get threadID')
+        Element.formDeleteThread.reset()
+        Util.popupInfo('Success','Thread has been deleted',Constant.iDmodalDeleteThread)
+        }catch(e){
+            if(Constant.DEV) console.log(e)
+            Util.popupInfo('failed to delete', JSON.stringify(e), Constant.iDmodalDeleteThread)
+        }
+    })
+
     Element.formCreateThread.addEventListener('submit', async e => {
         e.preventDefault()
         const button = Element.formCreateThread.getElementsByTagName('button')[0]
@@ -65,6 +79,7 @@ export async function home_page(){
     buildHomeScreen(threadList, true)
 }
 
+
 export function buildHomeScreen(threadList, newButton){
 
     let html =''
@@ -72,6 +87,7 @@ export function buildHomeScreen(threadList, newButton){
     {
         html = `
         <button class="btn btn-outline-danger" data-toggle="modal" data-target="#${Constant.iDmodalCreateNewThread}">+ New Thread</button>
+        <button id="form-delete"  class="btn btn-outline-danger" data-toggle="modal" data-target="#${Constant.iDmodalDeleteThread}">- Thread </button>
         `
     }
 
