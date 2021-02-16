@@ -6,10 +6,21 @@ import * as Util from '../viewpage/util.js'
 import { Message } from '../model/message.js'
 import * as Routes from '../controller/routes.js'
 
+var messageThreadId = "";
+
+
 export function addThreadViewEvents(){
     const viewForms = document.getElementsByClassName('thread-view-form')
     for (let n = 0; n <viewForms.length; n++){
         addThreadFormEvent(viewForms[n])
+    }
+}
+
+export function addMessageDeleteEvents(){
+    const viewForms = document.getElementsByClassName('message-delete-form')
+    for (let n = 0; n <viewForms.length; n++){
+        addMessageFormEvent(viewForms[n])
+        
     }
 }
 
@@ -19,11 +30,28 @@ export function addThreadFormEvent(form){
             const button = e.target.getElementsByTagName('button')[0]
             const label = Util.disableButton(button)
             const threadId = e.target.threadId.value
+            messageThreadId= threadId;
             history.pushState(null, null, Routes.routePath.THREAD + '#' + threadId)
             thread_page(threadId)
+            
             //await Util.sleep(1000) //testing code
             Util.enableButton(button, label)
         })
+}
+
+export async function addMessageFormEvent(form){
+    form.addEventListener('submit', async e => {
+        e.preventDefault()
+        const button = e.target.getElementsByTagName('button')[0]
+        const label = Util.disableButton(button)
+        const messageId = e.target.messageId.value
+        await FirebaseController.deleteMessage(messageId)
+        location.reload()
+       // history.pushState(null, null, Routes.routePath.THREAD + '#' + messageThreadId)
+        //thread_page(messageThreadId)
+        //await Util.sleep(1000) //testing code
+        Util.enableButton(button, label)
+    })
 }
 
 export async function thread_page(threadId){
@@ -79,7 +107,7 @@ export async function thread_page(threadId){
         </div>
     `
     Element.mainContent.innerHTML = html
-
+    addMessageDeleteEvents();
     document.getElementById('button-add-new-message').addEventListener('click', async () => {
         const content = document.getElementById('textarea-add-new-message').value
         const uid = Auth.currentUser.uid
@@ -107,17 +135,33 @@ export async function thread_page(threadId){
         document.getElementById('textarea-add-new-message').value = ' '
 
         Util.enableButton(button, label)
+        addMessageDeleteEvents();
+
     })
+    
 }
+async function deleteMessage(){
+    
+    await FirebaseController.deleteMessage(messageId)
+ }
+
 
 function buildMessageView(message){
+    console.log(message)
     return `
         <div class="border border-primary">
             <div class="bg-info text-white">
                 Replied by ${message.email} (At ${new Date(message.timestamp).toString()})
             </div>
             ${message.content}
+            <div>
+            <form method="post" class="message-delete-form">
+            <input type="hidden" name="messageId" value="${message.docId}">
+            <button type="submit" class="btn btn-outline-primary">Delete</button>
+            </form>
+            </div>
         </div>
         <hr>
     `
 }
+

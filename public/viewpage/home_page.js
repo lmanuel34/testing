@@ -20,9 +20,11 @@ export function addEventListeners(){
         e.preventDefault()
         //console.log(FirebaseController.getOneThread.theadId)
         try{
-        await FirebaseController.deleteThread('need to get threadID')
+         FirebaseController.deleteThread()
         Element.formDeleteThread.reset()
         Util.popupInfo('Success','Thread has been deleted',Constant.iDmodalDeleteThread)
+        //home_page();
+        location.reload();
         }catch(e){
             if(Constant.DEV) console.log(e)
             Util.popupInfo('failed to delete', JSON.stringify(e), Constant.iDmodalDeleteThread)
@@ -68,7 +70,7 @@ export async function home_page(){
         return
     }
 
-    let threadList
+    let threadList = []
     try{
         threadList = await FirebaseController.getThreadlist()
     }catch(e){
